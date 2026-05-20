@@ -1,0 +1,8 @@
+spring:
+    application:
+      name: hospital-service
+    datasource:
+      url: jdbc:h2:mem:hospitaldb
+    h2:
+      console:
+        enabled: true
