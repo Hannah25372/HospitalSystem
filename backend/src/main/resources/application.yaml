@@ -1,8 +1,25 @@
 spring:
-    application:
-      name: hospital-service
-    datasource:
-      url: jdbc:h2:mem:hospitaldb
-    h2:
-      console:
-        enabled: true
+  application:
+    name: hospital-service
+
+  datasource:
+    url: jdbc:h2:mem:hospitaldb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop # Hibernate creates schema on start, drops on stop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  h2:
+    console:
+      enabled: true # Accessible at http://localhost:8080/h2-console
+        
+grpc:
+    server:
+      port: 9090 # gRPC listens here; HTTP stays on 8080
