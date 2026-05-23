@@ -12,7 +12,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import com.hospital.hospital_service.database.enums.Sex;
+import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "patients")
 public class Patient {

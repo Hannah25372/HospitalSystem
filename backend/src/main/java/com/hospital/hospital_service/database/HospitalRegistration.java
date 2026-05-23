@@ -9,7 +9,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
+import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "hospital_registrations",
         uniqueConstraints = @UniqueConstraint(columnNames = {"hospital_id", "patient_id"}))

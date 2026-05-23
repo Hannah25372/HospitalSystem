@@ -8,7 +8,9 @@ package com.hospital.hospital_service.database;
   import org.hibernate.annotations.CreationTimestamp;
   import org.hibernate.annotations.UpdateTimestamp;
   import java.time.LocalDateTime;
+  import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "hospitals")
 public class Hospital {

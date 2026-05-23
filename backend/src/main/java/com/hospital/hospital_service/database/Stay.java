@@ -13,7 +13,9 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import com.hospital.hospital_service.database.enums.StayStatus;
+import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "stays")
 public class Stay {
