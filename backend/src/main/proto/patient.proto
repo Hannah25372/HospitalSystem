@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package hospital;
+
+import "common.proto";
+
+option java_package = "com.hospital.hospital_service.grpc";
+option java_multiple_files = true;
+
+enum Sex {
+  SEX_UNSPECIFIED = 0;
+  SEX_MALE = 1;
+  SEX_FEMALE = 2;
+}
+
+message PatientMessage {
+  int64 id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string date_of_birth = 4;
+  Sex sex = 5;
+  string email = 6;
+  string created_at = 7;
+  string updated_at = 8;
+}
+
+message HospitalRegistrationMessage {
+  int64 id = 1;
+  int64 patient_id = 2;
+  int64 hospital_id = 3;
+  string admission_date = 4;
+}
+
+message CreatePatientRequest {
+  string first_name = 1;
+  string last_name = 2;
+  string date_of_birth = 3;
+  Sex sex = 4;
+  string email = 5;
+}
+
+message GetPatientRequest {
+  int64 id = 1;
+}
+
+message ListPatientsRequest {
+  PageRequest page = 1;
+}
+
+message ListPatientsResponse {
+  repeated PatientMessage patients = 1;
+  PageInfo page_info = 2;
+}
+
+message RegisterAtHospitalRequest {
+  int64 patient_id = 1;
+  int64 hospital_id = 2;
+  string admission_date = 3;
+}
+
+service PatientService {
+  rpc CreatePatient(CreatePatientRequest) returns (PatientMessage);
+  rpc GetPatient(GetPatientRequest) returns (PatientMessage);
+  rpc ListPatients(ListPatientsRequest) returns (ListPatientsResponse);
+  rpc RegisterAtHospital(RegisterAtHospitalRequest) returns (HospitalRegistrationMessage);
+}

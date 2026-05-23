@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package hospital;
+
+option java_package = "com.hospital.hospital_service.grpc";
+option java_multiple_files = true;
+
+message PageRequest {
+  int32 page = 1;
+  int32 size = 2;
+}
+
+message PageInfo {
+  int32 total_elements = 1;
+  int32 total_pages = 2;
+  int32 current_page = 3;
+}

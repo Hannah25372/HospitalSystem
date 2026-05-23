@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package hospital;
+
+import "common.proto";
+
+option java_package = "com.hospital.hospital_service.grpc";
+option java_multiple_files = true;
+
+enum StayStatus {
+  STAY_STATUS_UNSPECIFIED = 0;
+  STAY_STATUS_LIVE = 1;
+  STAY_STATUS_CANCELLED = 2;
+}
+
+message StayMessage {
+  int64 id = 1;
+  int64 patient_id = 2;
+  int64 hospital_id = 3;
+  string start_date = 4;
+  string end_date = 5;
+  StayStatus status = 6;
+  optional int64 bill_id = 7;
+  string created_at = 8;
+}
+
+message CreateStayRequest {
+  int64 patient_id = 1;
+  int64 hospital_id = 2;
+  string start_date = 3;
+  string end_date = 4;
+}
+
+message CancelStayRequest {
+  int64 id = 1;
+}
+
+message ListStaysByPatientRequest {
+  int64 patient_id = 1;
+  PageRequest page = 2;
+}
+
+message ListStaysResponse {
+  repeated StayMessage stays = 1;
+  PageInfo page_info = 2;
+}
+
+service StayService {
+  rpc CreateStay(CreateStayRequest) returns (StayMessage);
+  rpc CancelStay(CancelStayRequest) returns (StayMessage);
+  rpc ListStaysByPatient(ListStaysByPatientRequest) returns (ListStaysResponse);
+}

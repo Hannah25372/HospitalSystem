@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package hospital;
+
+import "common.proto";
+
+option java_package = "com.hospital.hospital_service.grpc";
+option java_multiple_files = true;
+
+enum BillStatus {
+  BILL_STATUS_UNSPECIFIED = 0;
+  BILL_STATUS_OUTSTANDING = 1;
+  BILL_STATUS_PAID = 2;
+}
+
+message BillMessage {
+  int64 id = 1;
+  int64 patient_id = 2;
+  int64 hospital_id = 3;
+  int32 total_amount = 4;
+  BillStatus status = 5;
+  string created_at = 6;
+  string updated_at = 7;
+}
+
+message MarkBillPaidRequest {
+  int64 id = 1;
+}
+
+message GetBillRequest {
+  int64 id = 1;
+}
+
+message ListBillsByPatientRequest {
+  int64 patient_id = 1;
+  PageRequest page = 2;
+}
+
+message ListBillsResponse {
+  repeated BillMessage bills = 1;
+  PageInfo page_info = 2;
+}
+
+service BillService {
+  rpc MarkBillPaid(MarkBillPaidRequest) returns (BillMessage);
+  rpc GetBill(GetBillRequest) returns (BillMessage);
+  rpc ListBillsByPatient(ListBillsByPatientRequest) returns (ListBillsResponse);
+}

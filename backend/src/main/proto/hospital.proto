@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package hospital;
+
+import "common.proto";
+
+option java_package = "com.hospital.hospital_service.grpc";
+option java_multiple_files = true;
+
+message HospitalMessage {
+  int64 id = 1;
+  string name = 2;
+  string address = 3;
+  int32 daily_rate = 4;
+  string created_at = 5;
+  string updated_at = 6;
+}
+
+message CreateHospitalRequest {
+  string name = 1;
+  string address = 2;
+  int32 daily_rate = 3;
+}
+
+message GetHospitalRequest {
+  int64 id = 1;
+}
+
+message ListHospitalsRequest {
+  PageRequest page = 1;
+}
+
+message ListHospitalsResponse {
+  repeated HospitalMessage hospitals = 1;
+  PageInfo page_info = 2;
+}
+
+service HospitalService {
+  rpc CreateHospital(CreateHospitalRequest) returns (HospitalMessage);
+  rpc GetHospital(GetHospitalRequest) returns (HospitalMessage);
+  rpc ListHospitals(ListHospitalsRequest) returns (ListHospitalsResponse);
+}
