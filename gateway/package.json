@@ -1,0 +1,17 @@
+{
+  "name": "gateway",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "mesh dev",
+    "start": "mesh start",
+    "build": "mesh build"
+  },
+  "dependencies": {
+    "@graphql-mesh/cli": "^0.100.52",
+    "@graphql-mesh/grpc": "^0.108.42",
+    "@grpc/grpc-js": "^1.13.0",
+    "@grpc/proto-loader": "^0.7.15",
+    "graphql": "^16.9.0"
+  }
+}

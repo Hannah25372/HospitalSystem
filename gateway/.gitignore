@@ -1,0 +1,5 @@
+node_modules/
+.mesh/
+dist
+
+.vscode/

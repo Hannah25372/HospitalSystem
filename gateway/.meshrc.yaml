@@ -1,0 +1,176 @@
+
+sources:
+  - name: Hospital
+    handler:
+      grpc:
+        endpoint: localhost:9090
+        protoFilePath:
+          file: ../backend/src/main/proto/hospital.proto
+          load:
+            includeDirs:
+              - ../backend/src/main/proto
+
+  - name: Patient
+    handler:
+      grpc:
+        endpoint: localhost:9090
+        protoFilePath:
+          file: ../backend/src/main/proto/patient.proto
+          load:
+            includeDirs:
+              - ../backend/src/main/proto
+
+  - name: Stay
+    handler:
+      grpc:
+        endpoint: localhost:9090
+        protoFilePath:
+          file: ../backend/src/main/proto/stay.proto
+          load:
+            includeDirs:
+              - ../backend/src/main/proto
+
+  - name: Bill
+    handler:
+      grpc:
+        endpoint: localhost:9090
+        protoFilePath:
+          file: ../backend/src/main/proto/bill.proto
+          load:
+            includeDirs:
+              - ../backend/src/main/proto
+
+additionalTypeDefs: |
+  type Hospital {
+    id: ID!
+    name: String!
+    address: String!
+    dailyRate: Int!
+    createdAt: String
+    updatedAt: String
+  }
+
+  type Patient {
+    id: ID!
+    firstName: String!
+    lastName: String!
+    dateOfBirth: String!
+    sex: Sex!
+    email: String!
+    createdAt: String
+    updatedAt: String
+  }
+
+  enum Sex {
+    SEX_UNSPECIFIED
+    SEX_MALE
+    SEX_FEMALE
+  }
+
+  type HospitalRegistration {
+    id: ID!
+    patientId: ID!
+    hospitalId: ID!
+    admissionDate: String!
+  }
+
+  type Stay {
+    id: ID!
+    patientId: ID!
+    hospitalId: ID!
+    startDate: String!
+    endDate: String
+    status: StayStatus!
+    billId: ID
+    createdAt: String
+  }
+
+  enum StayStatus {
+    STAY_STATUS_UNSPECIFIED
+    STAY_STATUS_LIVE
+    STAY_STATUS_CANCELLED
+  }
+
+  type Bill {
+    id: ID!
+    patientId: ID!
+    hospitalId: ID!
+    totalAmount: Int!
+    status: BillStatus!
+    createdAt: String
+    updatedAt: String
+  }
+
+  enum BillStatus {
+    BILL_STATUS_UNSPECIFIED
+    BILL_STATUS_OUTSTANDING
+    BILL_STATUS_PAID
+  }
+
+  type PageInfo {
+    totalElements: Int!
+    totalPages: Int!
+    currentPage: Int!
+  }
+
+  type HospitalsPage {
+    hospitals: [Hospital!]!
+    pageInfo: PageInfo!
+  }
+
+  type PatientsPage {
+    patients: [Patient!]!
+    pageInfo: PageInfo!
+  }
+
+  type StaysPage {
+    stays: [Stay!]!
+    pageInfo: PageInfo!
+  }
+
+  type BillsPage {
+    bills: [Bill!]!
+    pageInfo: PageInfo!
+  }
+
+  extend type Query {
+    hospital(id: ID!): Hospital
+    hospitals(page: Int, size: Int): HospitalsPage!
+    patient(id: ID!): Patient
+    patients(page: Int, size: Int): PatientsPage!
+    staysByPatient(patientId: ID!, page: Int, size: Int): StaysPage!
+    bill(id: ID!): Bill
+    billsByPatient(patientId: ID!, page: Int, size: Int): BillsPage!
+  }
+
+  type Mutation {
+    createHospital(name: String!, address: String!, dailyRate: Int!): Hospital!
+    createPatient(
+      firstName: String!
+      lastName: String!
+      dateOfBirth: String!
+      sex: Sex!
+      email: String!
+    ): Patient!
+    registerAtHospital(
+      patientId: ID!
+      hospitalId: ID!
+      admissionDate: String!
+    ): HospitalRegistration!
+    createStay(
+      patientId: ID!
+      hospitalId: ID!
+      startDate: String!
+      endDate: String!
+    ): Stay!
+    cancelStay(id: ID!): Stay!
+    markBillPaid(id: ID!): Bill!
+  }
+
+additionalResolvers:
+  - ./src/resolvers.js
+
+serve:
+  port: 4000
+  cors:
+    origin: '*'
