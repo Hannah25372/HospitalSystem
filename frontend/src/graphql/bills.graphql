@@ -1,0 +1,34 @@
+query GetBillsByPatient($patientId: ID!, $page: Int, $size: Int) {
+  billsByPatient(patientId: $patientId, page: $page, size: $size) {
+    bills {
+      id
+      patientId
+      hospitalId
+      totalAmount
+      status
+    }
+    pageInfo {
+      totalElements
+      totalPages
+      currentPage
+    }
+  }
+}
+
+query GetBill($id: ID!) {
+  bill(id: $id) {
+    id
+    patientId
+    hospitalId
+    totalAmount
+    status
+  }
+}
+
+mutation MarkBillPaid($id: ID!) {
+  markBillPaid(id: $id) {
+    id
+    status
+    totalAmount
+  }
+}

@@ -1,0 +1,33 @@
+query GetHospitals($page: Int, $size: Int) {
+  hospitals(page: $page, size: $size) {
+    hospitals {
+      id
+      name
+      address
+      dailyRate
+    }
+    pageInfo {
+      totalElements
+      totalPages
+      currentPage
+    }
+  }
+}
+
+query GetHospital($id: ID!) {
+  hospital(id: $id) {
+    id
+    name
+    address
+    dailyRate
+  }
+}
+
+mutation CreateHospital($name: String!, $address: String!, $dailyRate: Int!) {
+  createHospital(name: $name, address: $address, dailyRate: $dailyRate) {
+    id
+    name
+    address
+    dailyRate
+  }
+}

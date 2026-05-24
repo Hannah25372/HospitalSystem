@@ -1,0 +1,47 @@
+query GetStaysByPatient($patientId: ID!, $page: Int, $size: Int) {
+  staysByPatient(patientId: $patientId, page: $page, size: $size) {
+    stays {
+      id
+      patientId
+      hospitalId
+      startDate
+      endDate
+      status
+      billId
+    }
+    pageInfo {
+      totalElements
+      totalPages
+      currentPage
+    }
+  }
+}
+
+mutation CreateStay(
+  $patientId: ID!
+  $hospitalId: ID!
+  $startDate: String!
+  $endDate: String!
+) {
+  createStay(
+    patientId: $patientId
+    hospitalId: $hospitalId
+    startDate: $startDate
+    endDate: $endDate
+  ) {
+    id
+    patientId
+    hospitalId
+    startDate
+    endDate
+    status
+    billId
+  }
+}
+
+mutation CancelStay($id: ID!) {
+  cancelStay(id: $id) {
+    id
+    status
+  }
+}

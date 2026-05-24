@@ -1,0 +1,51 @@
+query GetPatients($page: Int, $size: Int) {
+  patients(page: $page, size: $size) {
+    patients {
+      id
+      firstName
+      lastName
+      dateOfBirth
+      sex
+      email
+    }
+    pageInfo {
+      totalElements
+      totalPages
+      currentPage
+    }
+  }
+}
+
+query GetPatient($id: ID!) {
+  patient(id: $id) {
+    id
+    firstName
+    lastName
+    dateOfBirth
+    sex
+    email
+  }
+}
+
+mutation CreatePatient(
+  $firstName: String!
+  $lastName: String!
+  $dateOfBirth: String!
+  $sex: Sex!
+  $email: String!
+) {
+  createPatient(
+    firstName: $firstName
+    lastName: $lastName
+    dateOfBirth: $dateOfBirth
+    sex: $sex
+    email: $email
+  ) {
+    id
+    firstName
+    lastName
+    dateOfBirth
+    sex
+    email
+  }
+}

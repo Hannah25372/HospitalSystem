@@ -1,0 +1,16 @@
+mutation RegisterAtHospital(
+  $patientId: ID!
+  $hospitalId: ID!
+  $admissionDate: String!
+) {
+  registerAtHospital(
+    patientId: $patientId
+    hospitalId: $hospitalId
+    admissionDate: $admissionDate
+  ) {
+    id
+    patientId
+    hospitalId
+    admissionDate
+  }
+}
