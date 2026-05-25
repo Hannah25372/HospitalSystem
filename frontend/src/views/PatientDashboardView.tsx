@@ -73,9 +73,21 @@ function quarterLabel(dateStr: string): string {
 }
 
 function QuarterlyChart({ stays }: { stays: Stay[] }) {
+
   const counts = stays.reduce<Record<string, number>>((acc, stay) => {
-    const q = quarterLabel(stay.startDate);
-    acc[q] = (acc[q] ?? 0) + 1;
+    if (stay.status === 'STAY_STATUS_LIVE'){
+      const q = quarterLabel(stay.startDate);
+      acc[q] = (acc[q] ?? 0) + 1;
+    }
+    return acc;
+  }, {});
+
+  const durations = stays.reduce<Record<string, number>>((acc, stay) => {
+    if (stay.status === 'STAY_STATUS_LIVE'){
+      const q = quarterLabel(stay.startDate);
+      const durationDays = dayjs(stay.endDate).diff(dayjs(stay.startDate), 'day');
+      acc[q] = (acc[q] ?? 0) + durationDays;
+    }
     return acc;
   }, {});
 
@@ -88,22 +100,33 @@ function QuarterlyChart({ stays }: { stays: Stay[] }) {
   const BAR_W = 52;
   const BAR_GAP = 24;
   const CHART_H = 120;
+  const TOP_PAD = 35;
   const maxCount = Math.max(...entries.map(([, v]) => v));
   const svgW = entries.length * (BAR_W + BAR_GAP) + BAR_GAP;
 
   return (
     <svg
       width={svgW}
-      height={CHART_H + 44}
+      height={CHART_H + TOP_PAD + 44}
       style={{ display: 'block', overflow: 'visible' }}
     >
       {entries.map(([label, count], i) => {
+        const totalDays = durations[label] ?? 0;
         const barH = Math.max(6, (count / maxCount) * CHART_H);
         const x = BAR_GAP + i * (BAR_W + BAR_GAP);
-        const y = CHART_H - barH;
+        const y = TOP_PAD + CHART_H - barH;
         return (
           <g key={label}>
             <rect x={x} y={y} width={BAR_W} height={barH} fill="#1677ff" rx={4} />
+            <text
+              x={x + BAR_W / 2}
+              y={y - 22}
+              textAnchor="middle"
+              fontSize={11}
+              fill="#666"
+            >
+              {totalDays} day{totalDays !== 1 ? 's' : ''}
+            </text>
             <text
               x={x + BAR_W / 2}
               y={y - 6}
@@ -112,11 +135,11 @@ function QuarterlyChart({ stays }: { stays: Stay[] }) {
               fill="#333"
               fontWeight={600}
             >
-              {count}
+              {count} stay{count !== 1 ? 's' : ''}
             </text>
             <text
               x={x + BAR_W / 2}
-              y={CHART_H + 18}
+              y={TOP_PAD + CHART_H + 18}
               textAnchor="middle"
               fontSize={11}
               fill="#888"
