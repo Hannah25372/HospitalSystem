@@ -47,3 +47,16 @@ mutation CreateHospital($name: String!, $address: String!, $dailyRate: Int!) {
     dailyRate
   }
 }
+
+mutation UpdateHospital($id: ID!, $name: String, $address: String, $dailyRate: Int) {
+  updateHospital(id: $id, name: $name, address: $address, dailyRate: $dailyRate) {
+    id
+    name
+    address
+    dailyRate
+  }
+}
+
+mutation DeleteHospital($id: ID!) {
+  deleteHospital(id: $id)
+}

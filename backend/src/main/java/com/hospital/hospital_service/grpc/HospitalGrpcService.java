@@ -80,6 +80,32 @@ public class HospitalGrpcService extends HospitalServiceGrpc.HospitalServiceImpl
         }
     }
 
+    @Override
+    public void updateHospital(UpdateHospitalRequest request, StreamObserver<HospitalMessage> responseObserver) {
+        try {
+            Hospital hospital = hospitalService.updateHospital(
+                    request.getId(),
+                    request.hasName() ? request.getName() : null,
+                    request.hasAddress() ? request.getAddress() : null,
+                    request.hasDailyRate() ? request.getDailyRate() : null);
+            responseObserver.onNext(toProto(hospital));
+            responseObserver.onCompleted();
+        } catch (RuntimeException e) {
+            responseObserver.onError(Status.INTERNAL.withDescription(e.getMessage()).asRuntimeException());
+        }
+    }
+
+    @Override
+    public void deleteHospital(DeleteHospitalRequest request, StreamObserver<DeleteResponse> responseObserver) {
+        try {
+            hospitalService.deleteHospital(request.getId());
+            responseObserver.onNext(DeleteResponse.newBuilder().setSuccess(true).build());
+            responseObserver.onCompleted();
+        } catch (RuntimeException e) {
+            responseObserver.onError(Status.FAILED_PRECONDITION.withDescription(e.getMessage()).asRuntimeException());
+        }
+    }
+
     private HospitalMessage toProto(Hospital hospital) {
         return HospitalMessage.newBuilder()
                 .setId(hospital.getId())

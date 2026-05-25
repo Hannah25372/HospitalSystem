@@ -104,6 +104,34 @@ const resolvers = {
 
     markBillPaid: (_, { id }) =>
       call(billClient, 'markBillPaid', { id: parseInt(id, 10) }),
+
+    updatePatient: (_, { id, firstName, lastName, dateOfBirth, sex, email }) =>
+      call(patientClient, 'updatePatient', {
+        id: parseInt(id, 10),
+        ...(firstName !== undefined && firstName !== null ? { firstName } : {}),
+        ...(lastName !== undefined && lastName !== null ? { lastName } : {}),
+        ...(dateOfBirth !== undefined && dateOfBirth !== null ? { dateOfBirth } : {}),
+        ...(sex !== undefined && sex !== null ? { sex } : {}),
+        ...(email !== undefined && email !== null ? { email } : {}),
+      }),
+
+    deletePatient: async (_, { id }) => {
+      const res = await call(patientClient, 'deletePatient', { id: parseInt(id, 10) });
+      return res.success;
+    },
+
+    updateHospital: (_, { id, name, address, dailyRate }) =>
+      call(hospitalClient, 'updateHospital', {
+        id: parseInt(id, 10),
+        ...(name !== undefined && name !== null ? { name } : {}),
+        ...(address !== undefined && address !== null ? { address } : {}),
+        ...(dailyRate !== undefined && dailyRate !== null ? { dailyRate } : {}),
+      }),
+
+    deleteHospital: async (_, { id }) => {
+      const res = await call(hospitalClient, 'deleteHospital', { id: parseInt(id, 10) });
+      return res.success;
+    },
   },
 
   Stay: {

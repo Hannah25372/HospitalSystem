@@ -40,9 +40,22 @@ message ListHospitalsResponse {
   PageInfo page_info = 2;
 }
 
+message UpdateHospitalRequest {
+  int64 id = 1;
+  optional string name = 2;
+  optional string address = 3;
+  optional int32 daily_rate = 4;
+}
+
+message DeleteHospitalRequest {
+  int64 id = 1;
+}
+
 service HospitalService {
   rpc CreateHospital(CreateHospitalRequest) returns (HospitalMessage);
   rpc GetHospital(GetHospitalRequest) returns (HospitalMessage);
   rpc ListHospitals(ListHospitalsRequest) returns (ListHospitalsResponse);
   rpc ListHospitalsByPatient(ListHospitalsByPatientRequest) returns (ListHospitalsResponse);
+  rpc UpdateHospital(UpdateHospitalRequest) returns (HospitalMessage);
+  rpc DeleteHospital(DeleteHospitalRequest) returns (DeleteResponse);
 }

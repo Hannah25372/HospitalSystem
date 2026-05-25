@@ -67,3 +67,32 @@ mutation CreatePatient(
     email
   }
 }
+
+mutation UpdatePatient(
+  $id: ID!
+  $firstName: String
+  $lastName: String
+  $dateOfBirth: String
+  $sex: Sex
+  $email: String
+) {
+  updatePatient(
+    id: $id
+    firstName: $firstName
+    lastName: $lastName
+    dateOfBirth: $dateOfBirth
+    sex: $sex
+    email: $email
+  ) {
+    id
+    firstName
+    lastName
+    dateOfBirth
+    sex
+    email
+  }
+}
+
+mutation DeletePatient($id: ID!) {
+  deletePatient(id: $id)
+}

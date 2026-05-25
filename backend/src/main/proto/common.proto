@@ -15,3 +15,7 @@ message PageInfo {
   int32 total_pages = 2;
   int32 current_page = 3;
 }
+
+message DeleteResponse {
+  bool success = 1;
+}

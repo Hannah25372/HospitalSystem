@@ -167,6 +167,22 @@ additionalTypeDefs: |
     ): Stay!
     cancelStay(id: ID!): Stay!
     markBillPaid(id: ID!): Bill!
+    updatePatient(
+      id: ID!
+      firstName: String
+      lastName: String
+      dateOfBirth: String
+      sex: Sex
+      email: String
+    ): Patient!
+    deletePatient(id: ID!): Boolean!
+    updateHospital(
+      id: ID!
+      name: String
+      address: String
+      dailyRate: Int
+    ): Hospital!
+    deleteHospital(id: ID!): Boolean!
   }
 
 additionalResolvers:

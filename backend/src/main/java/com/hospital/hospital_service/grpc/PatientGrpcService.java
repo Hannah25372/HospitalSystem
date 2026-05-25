@@ -101,6 +101,34 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
         }
     }
 
+    @Override
+    public void updatePatient(UpdatePatientRequest request, StreamObserver<PatientMessage> responseObserver) {
+        try {
+            Patient patient = patientService.updatePatient(
+                    request.getId(),
+                    request.hasFirstName() ? request.getFirstName() : null,
+                    request.hasLastName() ? request.getLastName() : null,
+                    request.hasDateOfBirth() ? LocalDate.parse(request.getDateOfBirth()) : null,
+                    request.hasSex() ? toEntitySex(request.getSex()) : null,
+                    request.hasEmail() ? request.getEmail() : null);
+            responseObserver.onNext(toProto(patient));
+            responseObserver.onCompleted();
+        } catch (RuntimeException e) {
+            responseObserver.onError(Status.INTERNAL.withDescription(e.getMessage()).asRuntimeException());
+        }
+    }
+
+    @Override
+    public void deletePatient(DeletePatientRequest request, StreamObserver<DeleteResponse> responseObserver) {
+        try {
+            patientService.deletePatient(request.getId());
+            responseObserver.onNext(DeleteResponse.newBuilder().setSuccess(true).build());
+            responseObserver.onCompleted();
+        } catch (RuntimeException e) {
+            responseObserver.onError(Status.FAILED_PRECONDITION.withDescription(e.getMessage()).asRuntimeException());
+        }
+    }
+
     private PatientMessage toProto(Patient patient) {
         return PatientMessage.newBuilder()
                 .setId(patient.getId())

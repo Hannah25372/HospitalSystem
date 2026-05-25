@@ -30,6 +30,7 @@ export default function PatientListView() {
   const { data: allData, loading: allLoading } = useQuery(GetPatientsDocument, {
     variables: { page: page - 1, size: PAGE_SIZE },
     skip: !!hospitalId,
+    fetchPolicy: 'cache-and-network',
   });
 
   const { data: byHospitalData, loading: byHospitalLoading } = useQuery(
@@ -37,6 +38,7 @@ export default function PatientListView() {
     {
       variables: { hospitalId: hospitalId!, page: page - 1, size: PAGE_SIZE },
       skip: !hospitalId,
+      fetchPolicy: 'cache-and-network',
     },
   );
 

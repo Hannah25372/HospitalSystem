@@ -1,24 +1,37 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@apollo/client/react';
 import {
   Button,
   Card,
+  DatePicker,
   Descriptions,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  notification,
   Popconfirm,
+  Select,
   Space,
   Table,
   Tag,
   Typography,
 } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import type { TableColumnsType } from 'antd';
+import dayjs from 'dayjs';
 import {
   CancelStayDocument,
+  DeleteHospitalDocument,
+  DeletePatientDocument,
   GetBillsByPatientDocument,
   GetHospitalsByPatientDocument,
   GetPatientDocument,
   GetStaysByPatientDocument,
   MarkBillPaidDocument,
+  UpdateHospitalDocument,
+  UpdatePatientDocument,
 } from '../graphql/__generated__/graphql';
 import type {
   BillStatus,
@@ -116,38 +129,35 @@ function QuarterlyChart({ stays }: { stays: Stay[] }) {
 
 const fmt = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' });
 
-const hospitalColumns: TableColumnsType<Hospital> = [
-  { title: 'Name', dataIndex: 'name' },
-  { title: 'Address', dataIndex: 'address' },
-  {
-    title: 'Daily Rate',
-    dataIndex: 'dailyRate',
-    render: (v: number) => fmt.format(v),
-  },
-];
-
 export default function PatientDashboardView() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [patientModalOpen, setPatientModalOpen] = useState(false);
+  const [patientForm] = Form.useForm();
+  const [hospitalForm] = Form.useForm();
+  const [editingHospital, setEditingHospital] = useState<Hospital | null>(null);
 
-  const { data: patientData } = useQuery(GetPatientDocument, {
+  const { data: patientData, refetch: refetchPatient } = useQuery(GetPatientDocument, {
     variables: { id: id! },
     skip: !id,
+    fetchPolicy: 'cache-and-network',
   });
 
   const { data: staysData, loading: staysLoading } = useQuery(GetStaysByPatientDocument, {
     variables: { patientId: id!, size: 100 },
     skip: !id,
+    fetchPolicy: 'cache-and-network',
   });
 
   const { data: billsData, loading: billsLoading } = useQuery(GetBillsByPatientDocument, {
     variables: { patientId: id!, size: 100 },
     skip: !id,
+    fetchPolicy: 'cache-and-network',
   });
 
-  const { data: hospitalsData, loading: hospitalsLoading } = useQuery(
+  const { data: hospitalsData, loading: hospitalsLoading, refetch: refetchHospitals } = useQuery(
     GetHospitalsByPatientDocument,
-    { variables: { patientId: id!, size: 100 }, skip: !id },
+    { variables: { patientId: id!, size: 100 }, skip: !id, fetchPolicy: 'cache-and-network' },
   );
 
   const [cancelStay, { loading: cancelling }] = useMutation(CancelStayDocument, {
@@ -158,11 +168,137 @@ export default function PatientDashboardView() {
     refetchQueries: ['GetBillsByPatient'],
   });
 
+  const [updatePatient, { loading: updatingPatient }] = useMutation(UpdatePatientDocument);
+
+  const [deletePatient, { loading: deletingPatient }] = useMutation(DeletePatientDocument, {
+    onError: (err) => notification.error({ message: err.message }),
+  });
+
+  const [updateHospital, { loading: updatingHospital }] = useMutation(UpdateHospitalDocument);
+
+  const [deleteHospital, { loading: deletingHospital }] = useMutation(DeleteHospitalDocument, {
+    onError: (err) => notification.error({ message: err.message }),
+  });
+
   const patient = patientData?.patient;
   const stays = staysData?.staysByPatient.stays ?? [];
   const bills = billsData?.billsByPatient.bills ?? [];
   const hospitals = hospitalsData?.hospitalsByPatient.hospitals ?? [];
   const hospitalMap = new Map(hospitals.map((h) => [h.id, h.name]));
+
+  function handlePatientEditOpen() {
+    if (!patient) return;
+    patientForm.setFieldsValue({
+      firstName: patient.firstName,
+      lastName: patient.lastName,
+      dateOfBirth: dayjs(patient.dateOfBirth),
+      sex: patient.sex,
+      email: patient.email,
+    });
+    setPatientModalOpen(true);
+  }
+
+  async function handlePatientSave() {
+    const values = patientForm.getFieldsValue() as {
+      firstName: string;
+      lastName: string;
+      dateOfBirth: ReturnType<typeof dayjs> | null;
+      sex: Sex;
+      email: string;
+    };
+    const trim = (v: string): string | undefined => (v.trim() ? v.trim() : undefined);
+
+    await updatePatient({
+      variables: {
+        id: id!,
+        firstName: trim(values.firstName),
+        lastName: trim(values.lastName),
+        dateOfBirth: values.dateOfBirth ? values.dateOfBirth.format('YYYY-MM-DD') : undefined,
+        sex: values.sex ?? undefined,
+        email: trim(values.email),
+      },
+    });
+    await refetchPatient();
+    setPatientModalOpen(false);
+  }
+
+  async function handlePatientDelete() {
+    try {
+      const result = await deletePatient({ variables: { id: id! } });
+      if (result.data?.deletePatient) navigate('/patients');
+    } catch {
+      // error shown via onError handler
+    }
+  }
+
+  async function handleHospitalSave() {
+    if (!editingHospital) return;
+    const values = hospitalForm.getFieldsValue() as {
+      name: string;
+      address: string;
+      dailyRate: number | null;
+    };
+    const trim = (v: string): string | undefined => (v.trim() ? v.trim() : undefined);
+
+    await updateHospital({
+      variables: {
+        id: editingHospital.id,
+        name: trim(values.name),
+        address: trim(values.address),
+        dailyRate: typeof values.dailyRate === 'number' ? values.dailyRate : undefined,
+      },
+    });
+    await refetchHospitals();
+    setEditingHospital(null);
+  }
+
+  async function handleHospitalDelete(hospital: Hospital) {
+    try {
+      const result = await deleteHospital({ variables: { id: hospital.id } });
+      if (result.data?.deleteHospital) await refetchHospitals();
+    } catch {
+      // error shown via onError handler
+    }
+  }
+
+  const hospitalColumns: TableColumnsType<Hospital> = [
+    { title: 'Name', dataIndex: 'name' },
+    { title: 'Address', dataIndex: 'address' },
+    {
+      title: 'Daily Rate',
+      dataIndex: 'dailyRate',
+      render: (v: number) => fmt.format(v),
+    },
+    {
+      title: '',
+      key: 'actions',
+      width: 120,
+      render: (_, hospital) => (
+        <Space>
+          <Button
+            icon={<EditOutlined />}
+            size="small"
+            onClick={() => {
+              hospitalForm.setFieldsValue({
+                name: hospital.name,
+                address: hospital.address,
+                dailyRate: hospital.dailyRate,
+              });
+              setEditingHospital(hospital);
+            }}
+          />
+          <Popconfirm
+            title="Delete this hospital? Warning this will delete the hospital across all patients and cannot be undone."
+            onConfirm={() => handleHospitalDelete(hospital)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button danger icon={<DeleteOutlined />} size="small" loading={deletingHospital} />
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
 
   const stayColumns: TableColumnsType<Stay> = [
     {
@@ -262,13 +398,68 @@ export default function PatientDashboardView() {
         </Typography.Title>
       </Space>
 
-      <Card style={{ marginBottom: 16 }}>
+      <Card
+        style={{ marginBottom: 16 }}
+        extra={
+          <Space>
+            <Button icon={<EditOutlined />} onClick={handlePatientEditOpen}>
+              Edit
+            </Button>
+            <Popconfirm
+              title="Delete this patient? This cannot be undone."
+              onConfirm={handlePatientDelete}
+              okText="Delete"
+              cancelText="Cancel"
+              okButtonProps={{ danger: true }}
+            >
+              <Button danger icon={<DeleteOutlined />} loading={deletingPatient}>
+                Delete
+              </Button>
+            </Popconfirm>
+          </Space>
+        }
+      >
         <Descriptions column={2}>
+          <Descriptions.Item label="First Name">{patient.firstName}</Descriptions.Item>
+          <Descriptions.Item label="Last Name">{patient.lastName}</Descriptions.Item>
           <Descriptions.Item label="Date of Birth">{patient.dateOfBirth}</Descriptions.Item>
           <Descriptions.Item label="Sex">{SEX_LABEL[patient.sex]}</Descriptions.Item>
           <Descriptions.Item label="Email">{patient.email}</Descriptions.Item>
         </Descriptions>
       </Card>
+
+      <Modal
+        title="Edit Patient"
+        open={patientModalOpen}
+        onCancel={() => setPatientModalOpen(false)}
+        onOk={handlePatientSave}
+        confirmLoading={updatingPatient}
+        okText="Save"
+      >
+        <Form form={patientForm} layout="vertical" style={{ marginTop: 16 }}>
+          <Form.Item label="First Name" name="firstName">
+            <Input />
+          </Form.Item>
+          <Form.Item label="Last Name" name="lastName">
+            <Input />
+          </Form.Item>
+          <Form.Item label="Date of Birth" name="dateOfBirth">
+            <DatePicker style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item label="Sex" name="sex">
+            <Select
+              options={[
+                { value: 'SEX_MALE', label: 'Male' },
+                { value: 'SEX_FEMALE', label: 'Female' },
+                { value: 'SEX_UNSPECIFIED', label: '—' },
+              ]}
+            />
+          </Form.Item>
+          <Form.Item label="Email" name="email">
+            <Input />
+          </Form.Item>
+        </Form>
+      </Modal>
 
       <Card title="Registered Hospitals" style={{ marginBottom: 16 }}>
         <Table
@@ -308,6 +499,27 @@ export default function PatientDashboardView() {
           size="small"
         />
       </Card>
+
+      <Modal
+        title="Edit Hospital"
+        open={!!editingHospital}
+        onCancel={() => setEditingHospital(null)}
+        onOk={handleHospitalSave}
+        confirmLoading={updatingHospital}
+        okText="Save"
+      >
+        <Form form={hospitalForm} layout="vertical" style={{ marginTop: 16 }}>
+          <Form.Item label="Name" name="name">
+            <Input />
+          </Form.Item>
+          <Form.Item label="Address" name="address">
+            <Input />
+          </Form.Item>
+          <Form.Item label="Daily Rate (£)" name="dailyRate">
+            <InputNumber style={{ width: '100%' }} min={0} />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }
