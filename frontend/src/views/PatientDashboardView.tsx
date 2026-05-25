@@ -16,6 +16,7 @@ import {
   Space,
   Table,
   Tag,
+  Tooltip,
   Typography,
 } from 'antd';
 import { ArrowLeftOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
@@ -343,11 +344,19 @@ export default function PatientDashboardView() {
       dataIndex: 'hospitalId',
       render: (hId: string) => hospitalMap.get(hId) ?? hId,
     },
-    { title: 'Start Date', dataIndex: 'startDate' },
+    { 
+      title: 'Start Date',
+      dataIndex: 'startDate' },
     {
       title: 'End Date',
       dataIndex: 'endDate',
-      render: (v: string | null) => v ?? '—',
+    },
+    { title: 'Duration',
+      key: 'duration',
+      render: (_, stay) => {
+        const days = dayjs(stay.endDate).diff(dayjs(stay.startDate), 'day');
+        return `${days} day${days !== 1 ? 's' : ''}`;
+  }
     },
     {
       title: 'Status',
@@ -358,11 +367,16 @@ export default function PatientDashboardView() {
       },
     },
     {
+      title: 'Bill No.',
+      dataIndex: 'billId'
+    },
+    {
       title: '',
       key: 'actions',
       width: 100,
       render: (_, stay) =>
-        stay.status === 'STAY_STATUS_LIVE' ? (
+        stay.status === 'STAY_STATUS_LIVE' && stay.billId === null ? (
+          <Tooltip title="Only unbilled stays can be cancelled.">
           <Popconfirm
             title="Cancel this stay?"
             onConfirm={() => cancelStay({ variables: { id: stay.id } })}
@@ -373,11 +387,14 @@ export default function PatientDashboardView() {
               Cancel
             </Button>
           </Popconfirm>
+          </Tooltip>
         ) : null,
     },
   ];
 
   const billColumns: TableColumnsType<Bill> = [
+    {title: 'Bill No.',
+      dataIndex: 'id',},
     {
       title: 'Hospital',
       dataIndex: 'hospitalId',
@@ -537,9 +554,11 @@ export default function PatientDashboardView() {
       <Card
         title="Bills"
         extra={
+          <Tooltip title='A bill for each hospital will be generated for all unbilled stayed. Be sure to cancel any stays which should not be billed.'>
           <Button type="primary" loading={generatingBill} onClick={handleGenerateBill}>
             Generate Bill
           </Button>
+          </Tooltip>
         }
       >
         <Table
