@@ -136,6 +136,7 @@ additionalTypeDefs: |
   extend type Query {
     hospital(id: ID!): Hospital
     hospitals(page: Int, size: Int): HospitalsPage!
+    hospitalsByPatient(patientId: ID!, page: Int, size: Int): HospitalsPage!
     patient(id: ID!): Patient
     patients(page: Int, size: Int): PatientsPage!
     patientsByHospital(hospitalId: ID!, page: Int, size: Int): PatientsPage!

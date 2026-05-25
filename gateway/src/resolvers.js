@@ -43,6 +43,12 @@ const resolvers = {
     hospitals: (_, { page = 0, size = 10 }) =>
       call(hospitalClient, 'listHospitals', { page: { page, size } }),
 
+    hospitalsByPatient: (_, { patientId, page = 0, size = 100 }) =>
+      call(hospitalClient, 'listHospitalsByPatient', {
+        patientId: parseInt(patientId, 10),
+        page: { page, size },
+      }),
+
     patient: (_, { id }) =>
       call(patientClient, 'getPatient', { id: parseInt(id, 10) }),
 

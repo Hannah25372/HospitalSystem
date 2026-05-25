@@ -30,6 +30,11 @@ message ListHospitalsRequest {
   PageRequest page = 1;
 }
 
+message ListHospitalsByPatientRequest {
+  int64 patient_id = 1;
+  PageRequest page = 2;
+}
+
 message ListHospitalsResponse {
   repeated HospitalMessage hospitals = 1;
   PageInfo page_info = 2;
@@ -39,4 +44,5 @@ service HospitalService {
   rpc CreateHospital(CreateHospitalRequest) returns (HospitalMessage);
   rpc GetHospital(GetHospitalRequest) returns (HospitalMessage);
   rpc ListHospitals(ListHospitalsRequest) returns (ListHospitalsResponse);
+  rpc ListHospitalsByPatient(ListHospitalsByPatientRequest) returns (ListHospitalsResponse);
 }

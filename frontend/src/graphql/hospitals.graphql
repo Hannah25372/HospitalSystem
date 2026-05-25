@@ -23,6 +23,22 @@ query GetHospital($id: ID!) {
   }
 }
 
+query GetHospitalsByPatient($patientId: ID!, $page: Int, $size: Int) {
+  hospitalsByPatient(patientId: $patientId, page: $page, size: $size) {
+    hospitals {
+      id
+      name
+      address
+      dailyRate
+    }
+    pageInfo {
+      totalElements
+      totalPages
+      currentPage
+    }
+  }
+}
+
 mutation CreateHospital($name: String!, $address: String!, $dailyRate: Int!) {
   createHospital(name: $name, address: $address, dailyRate: $dailyRate) {
     id

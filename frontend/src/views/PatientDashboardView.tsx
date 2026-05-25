@@ -15,7 +15,7 @@ import type { TableColumnsType } from 'antd';
 import {
   CancelStayDocument,
   GetBillsByPatientDocument,
-  GetHospitalsDocument,
+  GetHospitalsByPatientDocument,
   GetPatientDocument,
   GetStaysByPatientDocument,
   MarkBillPaidDocument,
@@ -23,6 +23,7 @@ import {
 import type {
   BillStatus,
   GetBillsByPatientQuery,
+  GetHospitalsByPatientQuery,
   GetStaysByPatientQuery,
   Sex,
   StayStatus,
@@ -30,6 +31,7 @@ import type {
 
 type Stay = GetStaysByPatientQuery['staysByPatient']['stays'][number];
 type Bill = GetBillsByPatientQuery['billsByPatient']['bills'][number];
+type Hospital = GetHospitalsByPatientQuery['hospitalsByPatient']['hospitals'][number];
 
 const SEX_LABEL: Record<Sex, string> = {
   SEX_MALE: 'Male',
@@ -114,6 +116,16 @@ function QuarterlyChart({ stays }: { stays: Stay[] }) {
 
 const fmt = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' });
 
+const hospitalColumns: TableColumnsType<Hospital> = [
+  { title: 'Name', dataIndex: 'name' },
+  { title: 'Address', dataIndex: 'address' },
+  {
+    title: 'Daily Rate',
+    dataIndex: 'dailyRate',
+    render: (v: number) => fmt.format(v),
+  },
+];
+
 export default function PatientDashboardView() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -133,9 +145,10 @@ export default function PatientDashboardView() {
     skip: !id,
   });
 
-  const { data: hospitalsData } = useQuery(GetHospitalsDocument, {
-    variables: { size: 100 },
-  });
+  const { data: hospitalsData, loading: hospitalsLoading } = useQuery(
+    GetHospitalsByPatientDocument,
+    { variables: { patientId: id!, size: 100 }, skip: !id },
+  );
 
   const [cancelStay, { loading: cancelling }] = useMutation(CancelStayDocument, {
     refetchQueries: ['GetStaysByPatient'],
@@ -148,9 +161,8 @@ export default function PatientDashboardView() {
   const patient = patientData?.patient;
   const stays = staysData?.staysByPatient.stays ?? [];
   const bills = billsData?.billsByPatient.bills ?? [];
-  const hospitalMap = new Map(
-    hospitalsData?.hospitals.hospitals.map((h) => [h.id, h.name]),
-  );
+  const hospitals = hospitalsData?.hospitalsByPatient.hospitals ?? [];
+  const hospitalMap = new Map(hospitals.map((h) => [h.id, h.name]));
 
   const stayColumns: TableColumnsType<Stay> = [
     {
@@ -256,6 +268,17 @@ export default function PatientDashboardView() {
           <Descriptions.Item label="Sex">{SEX_LABEL[patient.sex]}</Descriptions.Item>
           <Descriptions.Item label="Email">{patient.email}</Descriptions.Item>
         </Descriptions>
+      </Card>
+
+      <Card title="Registered Hospitals" style={{ marginBottom: 16 }}>
+        <Table
+          rowKey="id"
+          loading={hospitalsLoading}
+          dataSource={hospitals}
+          columns={hospitalColumns}
+          pagination={false}
+          size="small"
+        />
       </Card>
 
       <Card title="Stay Summary by Quarter" style={{ marginBottom: 16 }}>

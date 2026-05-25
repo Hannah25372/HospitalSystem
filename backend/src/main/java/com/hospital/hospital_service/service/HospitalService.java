@@ -29,4 +29,8 @@ public class HospitalService {
     public Page<Hospital> listHospitals(Pageable pageable) {
         return hospitalRepository.findAll(pageable);
     }
+
+    public Page<Hospital> listHospitalsByPatient(Long patientId, Pageable pageable) {
+        return hospitalRepository.findByPatientId(patientId, pageable);
+    }
 }
