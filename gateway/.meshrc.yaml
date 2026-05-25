@@ -183,6 +183,7 @@ additionalTypeDefs: |
       dailyRate: Int
     ): Hospital!
     deleteHospital(id: ID!): Boolean!
+    generateBill(patientId: ID!): Int!
   }
 
 additionalResolvers:

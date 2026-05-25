@@ -41,8 +41,17 @@ message ListBillsResponse {
   PageInfo page_info = 2;
 }
 
+message GenerateBillRequest {
+  int64 patient_id = 1;
+}
+
+message GenerateBillResponse {
+  int32 bills_created = 1;
+}
+
 service BillService {
   rpc MarkBillPaid(MarkBillPaidRequest) returns (BillMessage);
   rpc GetBill(GetBillRequest) returns (BillMessage);
   rpc ListBillsByPatient(ListBillsByPatientRequest) returns (ListBillsResponse);
+  rpc GenerateBill(GenerateBillRequest) returns (GenerateBillResponse);
 }

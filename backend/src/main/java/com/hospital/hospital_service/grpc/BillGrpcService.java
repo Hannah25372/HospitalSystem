@@ -58,6 +58,17 @@ public class BillGrpcService extends BillServiceGrpc.BillServiceImplBase {
         }
     }
 
+    @Override
+    public void generateBill(GenerateBillRequest request, StreamObserver<GenerateBillResponse> responseObserver) {
+        try {
+            int billsCreated = billService.generateBill(request.getPatientId());
+            responseObserver.onNext(GenerateBillResponse.newBuilder().setBillsCreated(billsCreated).build());
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(Status.INTERNAL.withDescription(e.getMessage()).asRuntimeException());
+        }
+    }
+
     private BillMessage toProto(Bill bill) {
         return BillMessage.newBuilder()
                 .setId(bill.getId())

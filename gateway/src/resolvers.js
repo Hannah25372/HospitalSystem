@@ -132,6 +132,11 @@ const resolvers = {
       const res = await call(hospitalClient, 'deleteHospital', { id: parseInt(id, 10) });
       return res.success;
     },
+
+    generateBill: async (_, { patientId }) => {
+      const res = await call(billClient, 'generateBill', { patientId: parseInt(patientId, 10) });
+      return res.billsCreated;
+    },
   },
 
   Stay: {

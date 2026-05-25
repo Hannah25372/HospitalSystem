@@ -23,8 +23,10 @@ import type { TableColumnsType } from 'antd';
 import dayjs from 'dayjs';
 import {
   CancelStayDocument,
+  CreateStayDocument,
   DeleteHospitalDocument,
   DeletePatientDocument,
+  GenerateBillDocument,
   GetBillsByPatientDocument,
   GetHospitalsByPatientDocument,
   GetPatientDocument,
@@ -133,8 +135,10 @@ export default function PatientDashboardView() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [patientModalOpen, setPatientModalOpen] = useState(false);
+  const [addStayModalOpen, setAddStayModalOpen] = useState(false);
   const [patientForm] = Form.useForm();
   const [hospitalForm] = Form.useForm();
+  const [stayForm] = Form.useForm();
   const [editingHospital, setEditingHospital] = useState<Hospital | null>(null);
 
   const { data: patientData, refetch: refetchPatient } = useQuery(GetPatientDocument, {
@@ -172,6 +176,14 @@ export default function PatientDashboardView() {
 
   const [deletePatient, { loading: deletingPatient }] = useMutation(DeletePatientDocument, {
     onError: (err) => notification.error({ message: err.message }),
+  });
+
+  const [createStay, { loading: creatingStay }] = useMutation(CreateStayDocument, {
+    refetchQueries: ['GetStaysByPatient'],
+  });
+
+  const [generateBill, { loading: generatingBill }] = useMutation(GenerateBillDocument, {
+    refetchQueries: ['GetBillsByPatient', 'GetStaysByPatient'],
   });
 
   const [updateHospital, { loading: updatingHospital }] = useMutation(UpdateHospitalDocument);
@@ -231,6 +243,13 @@ export default function PatientDashboardView() {
     }
   }
 
+  async function handleGenerateBill() {
+    const result = await generateBill({ variables: { patientId: id! } });
+    if (result.data?.generateBill === 0) {
+      notification.info({ message: 'No unbilled stays found. All stays already have a bill assigned.' });
+    }
+  }
+
   async function handleHospitalSave() {
     if (!editingHospital) return;
     const values = hospitalForm.getFieldsValue() as {
@@ -250,6 +269,24 @@ export default function PatientDashboardView() {
     });
     await refetchHospitals();
     setEditingHospital(null);
+  }
+
+  async function handleStaySave() {
+    const values = stayForm.getFieldsValue() as {
+      hospitalId: string;
+      startDate: ReturnType<typeof dayjs> | null;
+      endDate: ReturnType<typeof dayjs> | null;
+    };
+    await createStay({
+      variables: {
+        patientId: id!,
+        hospitalId: values.hospitalId,
+        startDate: values.startDate!.format('YYYY-MM-DD'),
+        endDate: values.endDate!.format('YYYY-MM-DD'),
+      },
+    });
+    stayForm.resetFields();
+    setAddStayModalOpen(false);
   }
 
   async function handleHospitalDelete(hospital: Hospital) {
@@ -478,7 +515,15 @@ export default function PatientDashboardView() {
         </div>
       </Card>
 
-      <Card title="Stay History" style={{ marginBottom: 16 }}>
+      <Card
+        title="Stay History"
+        style={{ marginBottom: 16 }}
+        extra={
+          <Button type="primary" onClick={() => setAddStayModalOpen(true)}>
+            Add Stay
+          </Button>
+        }
+      >
         <Table
           rowKey="id"
           loading={staysLoading}
@@ -489,7 +534,14 @@ export default function PatientDashboardView() {
         />
       </Card>
 
-      <Card title="Bills">
+      <Card
+        title="Bills"
+        extra={
+          <Button type="primary" loading={generatingBill} onClick={handleGenerateBill}>
+            Generate Bill
+          </Button>
+        }
+      >
         <Table
           rowKey="id"
           loading={billsLoading}
@@ -499,6 +551,30 @@ export default function PatientDashboardView() {
           size="small"
         />
       </Card>
+
+      <Modal
+        title="Add Stay"
+        open={addStayModalOpen}
+        onCancel={() => { stayForm.resetFields(); setAddStayModalOpen(false); }}
+        onOk={handleStaySave}
+        confirmLoading={creatingStay}
+        okText="Add"
+      >
+        <Form form={stayForm} layout="vertical" style={{ marginTop: 16 }}>
+          <Form.Item label="Hospital" name="hospitalId" rules={[{ required: true, message: 'Please select a hospital' }]}>
+            <Select
+              options={hospitals.map((h) => ({ value: h.id, label: h.name }))}
+              placeholder="Select a hospital"
+            />
+          </Form.Item>
+          <Form.Item label="Start Date" name="startDate" rules={[{ required: true, message: 'Please select a start date' }]}>
+            <DatePicker style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item label="End Date" name="endDate" rules={[{ required: true, message: 'Please select an end date' }]}>
+            <DatePicker style={{ width: '100%' }} />
+          </Form.Item>
+        </Form>
+      </Modal>
 
       <Modal
         title="Edit Hospital"
