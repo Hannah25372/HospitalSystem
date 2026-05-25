@@ -136,6 +136,11 @@ export default function PatientRegistrationView() {
       });
 
       void message.success('Hospital created successfully');
+      form.resetFields([
+                  'name',
+                  'address',
+                  'dailyRate'
+                ]);
     } catch (err: unknown) {
       void message.error(err instanceof Error ? err.message : 'Creation failed');
     } finally {
@@ -173,6 +178,8 @@ export default function PatientRegistrationView() {
                   'sex',
                   'email',
                   'existingPatientId',
+                  'hospitalId',
+                  'admissionDate',
                   'name',
                   'address',
                   'dailyRate'
