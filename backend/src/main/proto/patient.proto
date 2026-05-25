@@ -47,6 +47,11 @@ message ListPatientsRequest {
   PageRequest page = 1;
 }
 
+message ListPatientsByHospitalRequest {
+  int64 hospital_id = 1;
+  PageRequest page = 2;
+}
+
 message ListPatientsResponse {
   repeated PatientMessage patients = 1;
   PageInfo page_info = 2;
@@ -62,5 +67,6 @@ service PatientService {
   rpc CreatePatient(CreatePatientRequest) returns (PatientMessage);
   rpc GetPatient(GetPatientRequest) returns (PatientMessage);
   rpc ListPatients(ListPatientsRequest) returns (ListPatientsResponse);
+  rpc ListPatientsByHospital(ListPatientsByHospitalRequest) returns (ListPatientsResponse);
   rpc RegisterAtHospital(RegisterAtHospitalRequest) returns (HospitalRegistrationMessage);
 }

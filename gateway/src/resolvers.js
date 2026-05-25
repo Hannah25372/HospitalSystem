@@ -49,6 +49,12 @@ const resolvers = {
     patients: (_, { page = 0, size = 10 }) =>
       call(patientClient, 'listPatients', { page: { page, size } }),
 
+    patientsByHospital: (_, { hospitalId, page = 0, size = 10 }) =>
+      call(patientClient, 'listPatientsByHospital', {
+        hospitalId: parseInt(hospitalId, 10),
+        page: { page, size },
+      }),
+
     staysByPatient: (_, { patientId, page = 0, size = 10 }) =>
       call(stayClient, 'listStaysByPatient', {
         patientId: parseInt(patientId, 10),

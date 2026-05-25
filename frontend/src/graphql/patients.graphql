@@ -27,6 +27,24 @@ query GetPatient($id: ID!) {
   }
 }
 
+query GetPatientsByHospital($hospitalId: ID!, $page: Int, $size: Int) {
+  patientsByHospital(hospitalId: $hospitalId, page: $page, size: $size) {
+    patients {
+      id
+      firstName
+      lastName
+      dateOfBirth
+      sex
+      email
+    }
+    pageInfo {
+      totalElements
+      totalPages
+      currentPage
+    }
+  }
+}
+
 mutation CreatePatient(
   $firstName: String!
   $lastName: String!

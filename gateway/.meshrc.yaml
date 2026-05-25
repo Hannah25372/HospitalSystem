@@ -138,6 +138,7 @@ additionalTypeDefs: |
     hospitals(page: Int, size: Int): HospitalsPage!
     patient(id: ID!): Patient
     patients(page: Int, size: Int): PatientsPage!
+    patientsByHospital(hospitalId: ID!, page: Int, size: Int): PatientsPage!
     staysByPatient(patientId: ID!, page: Int, size: Int): StaysPage!
     bill(id: ID!): Bill
     billsByPatient(patientId: ID!, page: Int, size: Int): BillsPage!

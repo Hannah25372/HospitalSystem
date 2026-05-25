@@ -67,6 +67,27 @@ public class PatientGrpcService extends PatientServiceGrpc.PatientServiceImplBas
     }
 
     @Override
+    public void listPatientsByHospital(ListPatientsByHospitalRequest request, StreamObserver<ListPatientsResponse> responseObserver) {
+        try {
+            PageRequest pageable = PageRequest.of(request.getPage().getPage(), request.getPage().getSize());
+            Page<Patient> page = patientService.listPatientsByHospital(request.getHospitalId(), pageable);
+
+            ListPatientsResponse response = ListPatientsResponse.newBuilder()
+                    .addAllPatients(page.getContent().stream().map(this::toProto).toList())
+                    .setPageInfo(PageInfo.newBuilder()
+                            .setTotalElements((int) page.getTotalElements())
+                            .setTotalPages(page.getTotalPages())
+                            .setCurrentPage(page.getNumber())
+                            .build())
+                    .build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(Status.INTERNAL.withDescription(e.getMessage()).asRuntimeException());
+        }
+    }
+
+    @Override
     public void registerAtHospital(RegisterAtHospitalRequest request, StreamObserver<HospitalRegistrationMessage> responseObserver) {
         try {
             HospitalRegistration registration = patientService.registerAtHospital(

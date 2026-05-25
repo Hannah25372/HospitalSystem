@@ -41,6 +41,10 @@ public class PatientService {
         return patientRepository.findAll(pageable);
     }
 
+    public Page<Patient> listPatientsByHospital(Long hospitalId, Pageable pageable) {
+        return patientRepository.findByHospitalId(hospitalId, pageable);
+    }
+
     public HospitalRegistration registerAtHospital(Long patientId, Long hospitalId, LocalDate admissionDate) {
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new RuntimeException("Patient not found: " + patientId));

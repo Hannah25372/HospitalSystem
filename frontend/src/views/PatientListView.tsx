@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@apollo/client/react';
 import { Button, Input, Select, Space, Table, Tag, Typography } from 'antd';
-import { InfoCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined } from '@ant-design/icons';
 import type { TableColumnsType } from 'antd';
 import {
   GetHospitalsDocument,
   GetPatientsDocument,
+  GetPatientsByHospitalDocument,
 } from '../graphql/__generated__/graphql';
 import type { GetPatientsQuery, Sex } from '../graphql/__generated__/graphql';
 
@@ -24,16 +25,30 @@ export default function PatientListView() {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [nameFilter, setNameFilter] = useState('');
+  const [hospitalId, setHospitalId] = useState<string | undefined>();
 
-  const { data, loading } = useQuery(GetPatientsDocument, {
+  const { data: allData, loading: allLoading } = useQuery(GetPatientsDocument, {
     variables: { page: page - 1, size: PAGE_SIZE },
+    skip: !!hospitalId,
   });
+
+  const { data: byHospitalData, loading: byHospitalLoading } = useQuery(
+    GetPatientsByHospitalDocument,
+    {
+      variables: { hospitalId: hospitalId!, page: page - 1, size: PAGE_SIZE },
+      skip: !hospitalId,
+    },
+  );
 
   const { data: hospitalsData } = useQuery(GetHospitalsDocument, {
     variables: { size: 100 },
   });
 
-  const patients = data?.patients.patients ?? [];
+  const loading = allLoading || byHospitalLoading;
+  const patientsPage = hospitalId ? byHospitalData?.patientsByHospital : allData?.patients;
+  const patients = patientsPage?.patients ?? [];
+  const total = patientsPage?.pageInfo.totalElements ?? 0;
+
   const displayed = nameFilter
     ? patients.filter(
         (p) =>
@@ -75,8 +90,6 @@ export default function PatientListView() {
     },
   ];
 
-  const total = data?.patients.pageInfo.totalElements ?? 0;
-
   return (
     <div style={{ padding: 24, maxWidth: 1100, margin: '0 auto' }}>
       <div
@@ -109,17 +122,20 @@ export default function PatientListView() {
             if (!e.target.value) setNameFilter('');
           }}
         />
-        <span>
-            <Select
-              placeholder="Filter by hospital"
-              style={{ width: 220 }}
-              options={hospitalsData?.hospitals.hospitals.map((h) => ({
-                value: h.id,
-                label: h.name,
-              }))}
-              suffixIcon={<InfoCircleOutlined />}
-            />
-          </span>
+        <Select
+          placeholder="Filter by hospital"
+          allowClear
+          style={{ width: 220 }}
+          options={hospitalsData?.hospitals.hospitals.map((h) => ({
+            value: h.id,
+            label: h.name,
+          }))}
+          onChange={(val: string | undefined) => {
+            setHospitalId(val);
+            setPage(1);
+            setNameFilter('');
+          }}
+        />
       </Space>
 
       <Table
