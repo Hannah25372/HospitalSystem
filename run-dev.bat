@@ -13,3 +13,5 @@ if errorlevel 1 (
 
 echo Backend ready, starting gateway...
 start cmd /k "cd gateway && npm run dev"
+
+start "" http://localhost:5173/
