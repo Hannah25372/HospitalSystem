@@ -1,0 +1,35 @@
+Question
+The director of the largest hospital in the country (around 500.000 patients per year) wants to 
+have an overview of the average age of the patients who visited the hospital, divided by sex 
+and per month, for the past 10 years. 
+He wants to see this information immediately 200ms.
+
+
+Answer
+At 500k patients a year for 10 years, this would be approximately 5 million stay records. A query to the 
+database for this many records would not be within 200ms.
+
+An aggregate table could be created which incrementally stores and updates this summary data when a new stay 
+is created.
+
+This table could be as follows:
+PatientAgeSummary
+- hospital_id
+- month
+- year
+- sex
+- total_combined_ages
+- patient_count
+composite key on (hospital_id, month, year, sex)
+
+When a new stay is created, the PatientAgeSummary is queried to find the corresponding row which matches
+to the month and year of the new stay, and the sex of the patient. 
+The age of the patient in the new stay is added to the total_combined_ages and patient_count is 
+incremented by 1.
+
+When the director wants to view the described overview, this query can retrieve all records from 
+PatientAgeSummary in the last 10 years. This will be 240 records. (10 years * 12 months * 2 sexes).
+This will be a much faster query than 5 million records as stated above, and should complete in 200ms.
+
+The average age can be calculated at runtime by doing the following:
+sum(patient_age_summary) / sum(patient_count) for each subsections of years, months and sex.

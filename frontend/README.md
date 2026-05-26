@@ -1,75 +1,82 @@
-# React + TypeScript + Vite
+# Prerequisites
+- Node.js 18+
+- Java 17
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# How to run
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
-
-Note: This will impact Vite dev & build performances.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Use script at `project_root/run-dev.bat` to start all services on windows. Run from project_root with:
+```powershell
+.\run-dev.bat
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+To start all services manually, follow the below steps.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 1. Start the backend
+
+```powershell
+cd backend
+.\gradlew.bat bootRun    # Windows
+
+.\gradlew bootRun        # Mac/Linux
+```
+Runs on localhost:9090 (gRPC) + http://localhost:8080/h2-console (H2)
+
+### 2. Start the gateway 
+
+The backend must be already running.
+
+```powershell
+cd gateway
+npm install    # first time only
+npm run dev
+```
+
+GraphQL served at http://localhost:4000/graphql
+
+### 3. Start the frontend
+
+```powershell
+cd frontend
+npm install      # first time only
+npm run dev
+```
+
+App at http://localhost:5173
+
+
+# Running codegen
+  
+Running codegen regenerates TypeScript types if the GraphQL schema changes.
+To run:
+```powershell
+cd frontend
+npm run codegen
+```
+
+
+# Views / routes
+- /patients
+  - Patient list with hospital filter.
+  - Option to view patients (link to dashboard) and register patients/hospitals (link to registration form)
+- /patients/:id
+  - Patient dashboard including info panel, registered hospitals, quarterly stay summary chart, stay history, and bills.
+  - Options to edit/delete patients and hospitals, create/cancel stays, and generate bills
+- /register
+  - Create new patient, create new hospital, or register existing patient into existing hospital
+
+# Running tests
+Api tests have been created for a selection of events. These require the backend and the gateway to be running. They build on each other and run in order, resulting in populating the database.
+
+Use script at `project_root/run-api-tests.bat` to start required services and run tests. Run from project_root with:
+```powershell
+.\run-api-tests.bat
+```
+
+To run manually, start the backend and gateway services with the instructions above.
+
+Once running, run the tests with:
+```powershell
+cd gateway
+npm test
 ```
