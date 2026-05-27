@@ -85,7 +85,7 @@ function QuarterlyChart({ stays }: { stays: Stay[] }) {
   const durations = stays.reduce<Record<string, number>>((acc, stay) => {
     if (stay.status === 'STAY_STATUS_LIVE'){
       const q = quarterLabel(stay.startDate);
-      const durationDays = dayjs(stay.endDate).diff(dayjs(stay.startDate), 'day');
+      const durationDays = dayjs(stay.endDate).diff(dayjs(stay.startDate), 'day') + 1;
       acc[q] = (acc[q] ?? 0) + durationDays;
     }
     return acc;
@@ -204,6 +204,7 @@ export default function PatientDashboardView() {
 
   const [createStay, { loading: creatingStay }] = useMutation(CreateStayDocument, {
     refetchQueries: ['GetStaysByPatient'],
+    onError: (err) => notification.error({ message: err.message }),
   });
 
   const [generateBill, { loading: generatingBill }] = useMutation(GenerateBillDocument, {
@@ -336,6 +337,7 @@ export default function PatientDashboardView() {
       width: 120,
       render: (_, hospital) => (
         <Space>
+          <Tooltip title="Warning: This will edit the hospital across all patients.">
           <Button
             icon={<EditOutlined />}
             size="small"
@@ -347,14 +349,16 @@ export default function PatientDashboardView() {
               });
               setEditingHospital(hospital);
             }}
-          />
+          /></Tooltip>
           <Popconfirm
-            title="Delete this hospital? Warning this will delete the hospital across all patients and cannot be undone."
+            title="Delete this hospital? This cannot be undone."
             onConfirm={() => handleHospitalDelete(hospital)}
             okText="Yes"
             cancelText="No"
           >
+            <Tooltip title="Warning: This will delete the hospital across all patients.">
             <Button danger icon={<DeleteOutlined />} size="small" loading={deletingHospital} />
+            </Tooltip>
           </Popconfirm>
         </Space>
       ),
@@ -377,7 +381,7 @@ export default function PatientDashboardView() {
     { title: 'Duration',
       key: 'duration',
       render: (_, stay) => {
-        const days = dayjs(stay.endDate).diff(dayjs(stay.startDate), 'day');
+        const days = dayjs(stay.endDate).diff(dayjs(stay.startDate), 'day') + 1;
         return `${days} day${days !== 1 ? 's' : ''}`;
   }
     },

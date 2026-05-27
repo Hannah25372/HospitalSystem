@@ -50,7 +50,7 @@ public class BillService {
             List<Stay> stays = entry.getValue();
 
             int totalAmount = stays.stream().mapToInt(stay -> {
-                long days = Math.max(1, ChronoUnit.DAYS.between(stay.getStartDate(), stay.getEndDate()));
+                long days = ChronoUnit.DAYS.between(stay.getStartDate(), stay.getEndDate()) + 1;
                 return (int) days * hospital.getDailyRate();
             }).sum();
 
